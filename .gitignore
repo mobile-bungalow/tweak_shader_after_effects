@@ -1,0 +1,5 @@
+/build
+/cmake
+.DS_Store
+/.cache
+/tweak_shader_cxx/target

@@ -1,0 +1,18 @@
+[package]
+name = "tweak_shader_cxx"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+dashmap = "5.5.3"
+tweak_shader = "0.2.1" 
+rfd = "0.12.1"
+homedir = "0.2.1"
+pollster = "0.3.0" 
+cxx = "1.0"
+
+[build-dependencies]
+cxx-build = "1.0"
