@@ -214,6 +214,44 @@ static PF_Err UserChangedParam(
 
 	switch( extra->param_index )
 	{
+	case Params::IS_FILTER:
+	{
+
+		auto inputs = input_vec(sequence_data->rust_data);
+		int num_user_inputs = static_cast<int>(inputs.size());
+
+		for( int i = 0; i < num_user_inputs; i++ )
+		{
+
+			auto& input = inputs[i];
+			auto name = name_from_input(input);
+
+			uint32_t variant = static_cast<uint32_t>(variant_from_input(input));
+
+			uint32_t index
+				= (i * NUM_INPUT_TYPES) + LOCK_TIME_TO_LAYER + variant + 1;
+
+			PF_ParamDef* param_ref = params[index];
+
+			if( variant == static_cast<uint32_t>(InputVariant::Image) )
+			{
+				if( params[Params::IS_FILTER]->u.bd.value == 1 )
+				{
+					setParamVisibility(PLUGIN_ID, in_data, index, false);
+					param_ref->u.ld.dephault = PF_LayerDefault_MYSELF;
+					out_data->out_flags |= PF_OutFlag_FORCE_RERENDER;
+				}
+				else
+				{
+					setParamVisibility(PLUGIN_ID, in_data, index, true);
+					param_ref->u.ld.dephault = PF_LayerDefault_NONE;
+					out_data->out_flags |= PF_OutFlag_FORCE_RERENDER;
+				}
+				break;
+			}
+		}
+	}
+	break;
 	case Params::UNLOAD_SOURCE:
 		out_data->out_flags |= PF_OutFlag_FORCE_RERENDER;
 		unload_scene(global_data->rust_data, sequence_data->rust_data);
@@ -240,10 +278,7 @@ static PF_Err UserChangedParam(
 			);
 			out_data->out_flags |= PF_OutFlag_DISPLAY_ERROR_MESSAGE;
 		}
-		else // Input is valid, set up inputs
-		{
-			setParamsToMatchSequence(in_data, sequence_data, params);
-		}
+		setParamsToMatchSequence(in_data, sequence_data, params);
 		break;
 	}
 
@@ -365,7 +400,7 @@ static PF_Err SmartPreRender(
 	ERR(extra->cb->checkout_layer(
 		in_data->effect_ref,
 		0,
-		0,
+		1320,
 		&req,
 		in_data->current_time,
 		in_data->time_step,
@@ -384,7 +419,7 @@ static PF_Err SmartPreRender(
 	ERR(extra->cb->checkout_layer(
 		in_data->effect_ref,
 		0,
-		3,
+		INPUT_LAYER_ID,
 		&full_req,
 		in_data->current_time,
 		in_data->time_step,
@@ -412,11 +447,6 @@ static PF_Err SmartPreRender(
 		if( variant_from_input(input) == InputVariant::Image )
 		{
 			PF_CheckoutResult res;
-
-			if( !image_is_loaded(input) )
-			{
-				continue;
-			}
 
 			uint32_t index = (i * NUM_INPUT_TYPES) + LOCK_TIME_TO_LAYER
 						   + static_cast<uint32_t>(InputVariant::Image) + 1;
@@ -644,7 +674,9 @@ static PF_Err SmartRender(
 	PF_EffectWorld* output_layer = {};
 
 	ERR(seq_suite->PF_GetConstSequenceData(in_data->effect_ref, &const_seq));
-	ERR(extra->cb->checkout_layer_pixels(in_data->effect_ref, 3, &input_layer));
+	ERR(extra->cb->checkout_layer_pixels(
+		in_data->effect_ref, INPUT_LAYER_ID, &input_layer
+	));
 	ERR(extra->cb->checkout_output(in_data->effect_ref, &output_layer));
 
 	const auto* sequence_data
@@ -731,29 +763,41 @@ static PF_Err SmartRender(
 			set_point(input, point);
 			break;
 		case PF_Param_LAYER:
-			PF_LayerDef layer = param.u.ld;
+			PF_LayerDef* layer = &param.u.ld;
 			auto name_str = name_from_input(input);
 
 			// first image in filters is image data
 			if( b_is_filter && is_first_image )
 			{
-				layer = *input_layer;
+				layer = input_layer;
 				is_first_image = false;
+			}
+			else
+			{
+				ERR(extra->cb->checkout_layer_pixels(
+					in_data->effect_ref, index, &layer
+				));
+			}
+
+			if( !layer )
+			{
+				clear_image_input(sequence_data->rust_data, input);
+				break;
 			}
 
 			auto data = rust::Slice<const uint8_t>(
-				reinterpret_cast<uint8_t*>(layer.data),
-				layer.rowbytes * layer.height
+				reinterpret_cast<uint8_t*>(layer->data),
+				layer->rowbytes * layer->height
 			);
 
 			layer_data_vec.emplace_back(ImageInput{
 				.name = name_str,
 				.data = data,
-				.width = static_cast<rust::u32>(layer.width),
-				.height = static_cast<rust::u32>(layer.height),
-				.bytes_per_row = static_cast<rust::u32>(layer.rowbytes),
+				.width = static_cast<rust::u32>(layer->width),
+				.height = static_cast<rust::u32>(layer->height),
+				.bytes_per_row = static_cast<rust::u32>(layer->rowbytes),
 				.bit_depth
-				= static_cast<rust::u32>((layer.rowbytes / layer.width) / 8),
+				= static_cast<rust::u32>((layer->rowbytes / layer->width) / 8),
 			});
 			break;
 		}

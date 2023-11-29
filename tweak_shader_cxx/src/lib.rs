@@ -324,6 +324,12 @@ fn load_scene(global_data: &Box<GlobalData>, sequence_data: &Box<SequenceData>) 
     load_scene_from_source(global_data, sequence_data, &src)
 }
 
+fn clear_image_input(sequence_data: &Box<SequenceData>, input: &input::Input) -> bool {
+    let mut pipes = sequence_data.pipelines.write().unwrap();
+    pipes.input_textures.remove(&input.name);
+    pipes.ctx.remove_texture(&input.name)
+}
+
 fn has_image_input(sequence_data: &Box<SequenceData>) -> bool {
     sequence_data
         .pipelines
@@ -518,6 +524,7 @@ mod ffi {
         fn name_from_input(input: &Input) -> &str;
         fn image_is_loaded(input: &Input) -> bool;
         fn has_image_input(sequence_data: &Box<SequenceData>) -> bool;
+        fn clear_image_input(sequence_data: &Box<SequenceData>, input: &Input) -> bool;
 
         fn set_point(input: &mut Input, p: [f32; 2]);
         fn set_int_list(input: &mut Input, index: u32);

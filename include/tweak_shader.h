@@ -57,6 +57,8 @@ const uint32_t MAX_PARAMS = 32;
 // to actually set this. so its 10. 10 seems reasonable.
 const AEGP_PluginID PLUGIN_ID = 10;
 
+const AEGP_PluginID INPUT_LAYER_ID = 1234;
+
 // The total number of inputs types we use
 // to represent uniforms
 const uint32_t NUM_INPUT_TYPES = 7;
@@ -69,7 +71,7 @@ struct FfiGlobalData
 struct FfiSequenceData
 {
 	bool is_flat = false;
-	bool has_error = false;
+	bool needs_reload = false;
 	rust::Box<SequenceData> rust_data;
 };
 

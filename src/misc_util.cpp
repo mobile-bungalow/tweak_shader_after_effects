@@ -116,7 +116,7 @@ PF_Err createOneOfEveryInputType(
 	AEFX_CLR_STRUCT(def);
 	def.flags |= PF_ParamFlag_COLLAPSE_TWIRLY;
 	PF_ADD_POINT(
-		name, 50L, 50L, 0, index + static_cast<uint32_t>(InputVariant::Point2d)
+		name, 0L, 0L, 0, index + static_cast<uint32_t>(InputVariant::Point2d)
 	);
 
 	PF_SPRINTF(name, "image %d", index);
@@ -271,10 +271,16 @@ PF_Err setParamsToMatchSequence(
 		break;
 		case PF_Param_LAYER:
 		{
-			if( first_image )
+			if( first_image && params[Params::IS_FILTER]->u.bd.value == 1 )
 			{
+				setParamVisibility(PLUGIN_ID, in_data, index, false);
 				param.u.ld.dephault = PF_LayerDefault_MYSELF;
 				first_image = false;
+			}
+			else
+			{
+				setParamVisibility(PLUGIN_ID, in_data, index, true);
+				param.u.ld.dephault = PF_LayerDefault_NONE;
 			}
 		}
 		break;

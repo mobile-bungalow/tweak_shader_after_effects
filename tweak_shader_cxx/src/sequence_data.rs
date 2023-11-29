@@ -147,8 +147,7 @@ impl SequenceData {
                 bit_depth,
             } = &image;
 
-            if name.is_empty() || data.is_empty() {
-                ctx.remove_texture(name);
+            if data.is_empty() {
                 continue;
             }
 
@@ -175,7 +174,9 @@ impl SequenceData {
             let texture = if input_textures.get(*name).is_some_and(|t| {
                 t.width() == *width && t.height() == *height && t.format() == out_format
             }) {
-                input_textures.get(*name).unwrap()
+                let tex = input_textures.get(*name).unwrap();
+                ctx.load_shared_texture(&tex, name);
+                tex
             } else {
                 let new_tex = device.create_texture(&target_desc(*width, *height, out_format));
                 ctx.load_shared_texture(&new_tex, name);
