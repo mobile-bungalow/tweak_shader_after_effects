@@ -364,6 +364,10 @@ fn int_list_from_input(input: &Input) -> ffi::IntListInput {
     input.as_int_list()
 }
 
+fn image_is_loaded(input: &Input) -> bool {
+    input.image_is_loaded()
+}
+
 fn int_from_input(input: &Input) -> ffi::IntInput {
     input.as_int()
 }
@@ -494,14 +498,15 @@ mod ffi {
             src: &str,
         ) -> String;
 
-        pub fn variant_from_input(input: &Input) -> InputVariant;
-        pub fn color_from_input(input: &Input) -> ColorInput;
-        pub fn point_from_input(input: &Input) -> PointInput;
-        pub fn int_list_from_input(input: &Input) -> IntListInput;
-        pub fn int_from_input(input: &Input) -> IntInput;
-        pub fn float_from_input(input: &Input) -> FloatInput;
-        pub fn bool_from_input(input: &Input) -> BoolInput;
-        pub fn name_from_input(input: &Input) -> &str;
+        fn variant_from_input(input: &Input) -> InputVariant;
+        fn color_from_input(input: &Input) -> ColorInput;
+        fn point_from_input(input: &Input) -> PointInput;
+        fn int_list_from_input(input: &Input) -> IntListInput;
+        fn int_from_input(input: &Input) -> IntInput;
+        fn float_from_input(input: &Input) -> FloatInput;
+        fn bool_from_input(input: &Input) -> BoolInput;
+        fn name_from_input(input: &Input) -> &str;
+        fn image_is_loaded(input: &Input) -> bool;
 
         fn set_point(input: &mut Input, p: [f32; 2]);
         fn set_int_list(input: &mut Input, index: u32);

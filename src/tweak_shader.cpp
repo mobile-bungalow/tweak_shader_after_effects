@@ -341,7 +341,7 @@ static PF_Err SmartPreRender(
 	ERR(extra->cb->checkout_layer(
 		in_data->effect_ref,
 		0,
-		3,
+		0,
 		&req,
 		in_data->current_time,
 		in_data->time_step,
@@ -360,7 +360,7 @@ static PF_Err SmartPreRender(
 	ERR(extra->cb->checkout_layer(
 		in_data->effect_ref,
 		0,
-		0,
+		3,
 		&full_req,
 		in_data->current_time,
 		in_data->time_step,
@@ -368,22 +368,51 @@ static PF_Err SmartPreRender(
 		&checkout_result
 	));
 
-	PF_PreRenderOutput* output = extra->output;
+	auto seq_suite = AEFX_SuiteScoper<PF_EffectSequenceDataSuite1>(
+		in_data,
+		kPFEffectSequenceDataSuite,
+		kPFEffectSequenceDataSuiteVersion1,
+		out_data
+	);
 
-	//	PF_Rect outputRect
-	//		= {0,
-	//		   0,
-	//		   (A_long)ceil(
-	//			   (double)in_data->width * in_data->downsample_x.num
-	//			   / in_data->downsample_x.den
-	//		   ),
-	//		   (A_long)ceil(
-	//			   (double)in_data->height * in_data->downsample_y.num
-	//			   / in_data->downsample_y.den
-	//		   )};
-	//
-	//	UnionLRect(&outputRect, &extra->output->result_rect);
-	//	UnionLRect(&outputRect, &extra->output->max_result_rect);
+	PF_ConstHandle const_seq = {};
+	ERR(seq_suite->PF_GetConstSequenceData(in_data->effect_ref, &const_seq));
+
+	const auto* sequence_data
+		= reinterpret_cast<const FfiSequenceData*>(*const_seq);
+	auto vec = input_vec(sequence_data->rust_data);
+
+	for( uint32_t i = 0; i < vec.size(); i++ )
+	{
+		auto& input = vec[i];
+		if( variant_from_input(input) == InputVariant::Image )
+		{
+			PF_CheckoutResult res;
+
+			if( !image_is_loaded(input) )
+			{
+				continue;
+			}
+
+			uint32_t index = (i * NUM_INPUT_TYPES) + LOCK_TIME_TO_LAYER
+						   + static_cast<uint32_t>(InputVariant::Image) + 1;
+
+			PF_RenderRequest req = extra->input->output_request;
+
+			ERR(extra->cb->checkout_layer(
+				in_data->effect_ref,
+				index,
+				index,
+				&req,
+				in_data->current_time,
+				in_data->time_step,
+				in_data->time_scale,
+				&res
+			));
+		}
+	}
+
+	PF_PreRenderOutput* output = extra->output;
 
 	output->result_rect = checkout_result.result_rect;
 	output->max_result_rect = checkout_result.result_rect;
@@ -612,7 +641,6 @@ static PF_Err SmartRender(
 
 	auto inputs = input_vec(sequence_data->rust_data);
 	auto layer_data_vec = std::vector<ImageInput>();
-
 	int num_user_inputs = static_cast<int>(inputs.size());
 
 	// Update the scene paramaters
@@ -664,13 +692,16 @@ static PF_Err SmartRender(
 			break;
 		case PF_Param_LAYER:
 			PF_LayerDef layer = param.u.ld;
+
 			auto data = rust::Slice<const uint8_t>(
 				reinterpret_cast<uint8_t*>(layer.data),
 				layer.rowbytes * layer.height
 			);
 
+			auto name_str = name_from_input(input);
+
 			layer_data_vec.emplace_back(ImageInput{
-				.name = name_from_input(input),
+				.name = name_str,
 				.data = data,
 				.width = static_cast<rust::u32>(layer.width),
 				.height = static_cast<rust::u32>(layer.height),

@@ -78,6 +78,14 @@ impl Input {
         }
     }
 
+    pub fn image_is_loaded(&self) -> bool {
+        if let InputType::Image(TextureStatus::Loaded { .. }) = self.inner {
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn as_int(&self) -> ffi::IntInput {
         if let InputType::Int(
             IntInput {
