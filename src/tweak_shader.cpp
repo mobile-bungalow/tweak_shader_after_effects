@@ -887,7 +887,7 @@ extern "C" DllExport PF_Err PluginDataEntryFunction2(
 		inPluginDataCallBackPtr,
 		"Tweak Shader",   // Name
 		"Tweak Shader",   // Match Name
-		"Shader",         // Category
+		"Shaders",        // Category
 		AE_RESERVED_INFO, // Reserved Info
 		"EffectMain",     // Entry point
 		"www.concentratedbursts.netlify.com"

@@ -13,7 +13,7 @@ resource 'PiPL' (16000) {
 		},
 		/* [2] */
 		Name {
-			"Skeleton"
+			"Tweak Shader"
 		},
 		/* [3] */
 		Category {
