@@ -153,6 +153,15 @@ static PF_Err ParamsSetup(
 
 	AEFX_CLR_STRUCT(def);
 	PF_ADD_CHECKBOXX(
+		"Is Image Filter",
+		TRUE,
+		PF_ParamFlag_SUPERVISE | PF_ParamFlag_CANNOT_TIME_VARY
+			| PF_ParamFlag_COLLAPSE_TWIRLY,
+		Params::IS_FILTER
+	);
+
+	AEFX_CLR_STRUCT(def);
+	PF_ADD_CHECKBOXX(
 		"Use Layer Time",
 		TRUE,
 		PF_ParamFlag_SUPERVISE | PF_ParamFlag_CANNOT_TIME_VARY
@@ -269,6 +278,9 @@ static PF_Err UpdateParamsUI(
 		return err;
 	}
 
+	setParamVisibility(
+		PLUGIN_ID, in_data, IS_FILTER, has_image_input(sequence_data->rust_data)
+	);
 	if( is_default(sequence_data->rust_data) )
 	{
 		setParamVisibility(PLUGIN_ID, in_data, LOCK_TIME_TO_LAYER, false);
@@ -301,12 +313,24 @@ static PF_Err UpdateParamsUI(
 			);
 		}
 
+		bool first_image = true;
+
 		for( int i = 0; i < num_user_inputs; i++ )
 		{
 			auto& input = inputs[i];
 			uint32_t variant = static_cast<uint32_t>(variant_from_input(input));
 			uint32_t index
 				= (i * NUM_INPUT_TYPES) + LOCK_TIME_TO_LAYER + variant + 1;
+
+			// keep the first layer invisible if it's a filter
+			if( params[IS_FILTER]->u.bd.value == 1
+				&& variant == static_cast<uint32_t>(InputVariant::Image)
+				&& first_image )
+			{
+				first_image = false;
+				continue;
+			}
+
 			setParamVisibility(PLUGIN_ID, in_data, index, true);
 		}
 
@@ -632,6 +656,22 @@ static PF_Err SmartRender(
 		return err;
 	}
 
+	PF_ParamDef is_filter;
+	bool b_is_filter = false;
+	bool is_first_image = true;
+	ERR(PF_CHECKOUT_PARAM(
+		in_data,
+		IS_FILTER,
+		in_data->current_time,
+		in_data->time_step,
+		in_data->time_scale,
+		&is_filter
+	));
+
+	b_is_filter = is_filter.u.bd.value == 1;
+
+	ERR(PF_CHECKIN_PARAM(in_data, &is_filter));
+
 	// This is lazy don't worry
 	update_bitdepth(
 		sequence_data->rust_data,
@@ -692,13 +732,19 @@ static PF_Err SmartRender(
 			break;
 		case PF_Param_LAYER:
 			PF_LayerDef layer = param.u.ld;
+			auto name_str = name_from_input(input);
+
+			// first image in filters is image data
+			if( b_is_filter && is_first_image )
+			{
+				layer = *input_layer;
+				is_first_image = false;
+			}
 
 			auto data = rust::Slice<const uint8_t>(
 				reinterpret_cast<uint8_t*>(layer.data),
 				layer.rowbytes * layer.height
 			);
-
-			auto name_str = name_from_input(input);
 
 			layer_data_vec.emplace_back(ImageInput{
 				.name = name_str,

@@ -324,6 +324,16 @@ fn load_scene(global_data: &Box<GlobalData>, sequence_data: &Box<SequenceData>) 
     load_scene_from_source(global_data, sequence_data, &src)
 }
 
+fn has_image_input(sequence_data: &Box<SequenceData>) -> bool {
+    sequence_data
+        .pipelines
+        .read()
+        .unwrap()
+        .ctx
+        .iter_inputs()
+        .any(|(_, i)| matches!(i, tweak_shader::input_type::InputType::Image(_)))
+}
+
 fn unload_scene(global_data: &Box<GlobalData>, sequence_data: &Box<SequenceData>) {
     let mut pipelines = sequence_data.pipelines.write().unwrap();
     let bit_depth = pipelines.bit_depth;
@@ -507,6 +517,7 @@ mod ffi {
         fn bool_from_input(input: &Input) -> BoolInput;
         fn name_from_input(input: &Input) -> &str;
         fn image_is_loaded(input: &Input) -> bool;
+        fn has_image_input(sequence_data: &Box<SequenceData>) -> bool;
 
         fn set_point(input: &mut Input, p: [f32; 2]);
         fn set_int_list(input: &mut Input, index: u32);
