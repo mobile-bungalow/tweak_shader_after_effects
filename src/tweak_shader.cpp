@@ -4,6 +4,7 @@
 #include "misc_util.h"
 #include "src/lib.rs.h"
 #include "Param_Utils.h"
+#include "Smart_Utils.h"
 
 #include <cassert>
 #include <limits>
@@ -369,6 +370,21 @@ static PF_Err SmartPreRender(
 
 	PF_PreRenderOutput* output = extra->output;
 
+	//	PF_Rect outputRect
+	//		= {0,
+	//		   0,
+	//		   (A_long)ceil(
+	//			   (double)in_data->width * in_data->downsample_x.num
+	//			   / in_data->downsample_x.den
+	//		   ),
+	//		   (A_long)ceil(
+	//			   (double)in_data->height * in_data->downsample_y.num
+	//			   / in_data->downsample_y.den
+	//		   )};
+	//
+	//	UnionLRect(&outputRect, &extra->output->result_rect);
+	//	UnionLRect(&outputRect, &extra->output->max_result_rect);
+
 	output->result_rect = checkout_result.result_rect;
 	output->max_result_rect = checkout_result.result_rect;
 	output->flags = PF_RenderOutputFlag_RETURNS_EXTRA_PIXELS;
@@ -650,8 +666,9 @@ static PF_Err SmartRender(
 			PF_LayerDef layer = param.u.ld;
 			auto data = rust::Slice<const uint8_t>(
 				reinterpret_cast<uint8_t*>(layer.data),
-				layer.rowbytes * layer.width
+				layer.rowbytes * layer.height
 			);
+
 			layer_data_vec.emplace_back(ImageInput{
 				.name = name_from_input(input),
 				.data = data,

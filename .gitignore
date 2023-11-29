@@ -3,3 +3,4 @@
 .DS_Store
 /.cache
 /tweak_shader_cxx/target
+compile_commands.json

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(Skeleton)
+project(TWEAK_SHADER)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -34,8 +34,17 @@ include_directories(
   tweak_shader_cxx/target/cxxbridge/tweak_shader_cxx
 )
 
+#run this to build the include dirs
+add_custom_target(
+    proxy_run_build 
+    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/tweak_shader_cxx && cargo build
+)
+
 # Specify the plugin target
 add_library(${PROJECT_NAME} MODULE ${SOURCE_FILES})
+
+add_dependencies(${PROJECT_NAME} proxy_run_build)
+
 target_link_libraries(${PROJECT_NAME} tweak_shader_cxx)
 
 # If we are generating an xcode project 
