@@ -9,18 +9,24 @@
 #include "tweak_shader.h"
 #include <string>
 
-#define LOG(level, message) log(level, __FILE__, __LINE__, message)
 
+
+#ifdef AE_OS_WIN
+#define LOG(level, message) 
+#else
 enum LogLevel
 {
 	INFO,
 	WARNING,
-	ERROR
+	ERROR,
 };
 
 void log(
 	LogLevel level, const char* file, int line, const std::string& message
 );
+
+#define LOG(level, message) log(level, __FILE__, __LINE__, message)
+#endif
 
 PF_Err setParamVisibility(
 	AEGP_PluginID aegpId,
@@ -34,7 +40,7 @@ PF_Err createOneOfEveryInputType(
 	PF_OutData* out_data,
 	PF_ParamDef* params[],
 	PF_LayerDef* output,
-	int32_t index
+	rust::u32 index
 );
 
 PF_Err setParamsToMatchSequence(

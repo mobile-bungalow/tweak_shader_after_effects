@@ -1,6 +1,5 @@
 #pragma once
 
-#include <arm/types.h>
 #ifndef TWEAK_SHADER_H
 #define TWEAK_SHADER_H
 
@@ -78,7 +77,7 @@ struct FfiSequenceData
 struct SequenceDataFlat
 {
 	bool is_flat = true;
-	user_size_t run_length;
+	rust::usize run_length;
 	char source[];
 };
 

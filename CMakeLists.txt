@@ -126,6 +126,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 		-D_CRT_SECURE_NO_WARNINGS
 	)
 
+  	target_link_libraries(${PROJECT_NAME} D3DCompiler wsock32 userenv ws2_32 kernel32 ntdll bcrypt opengl32)
+
+
 	set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".aex")
 	get_filename_component(
 		AFX_REZ

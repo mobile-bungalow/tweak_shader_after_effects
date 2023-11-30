@@ -269,10 +269,13 @@ static PF_Err UserChangedParam(
 
 		if( err.size() != 0 )
 		{
+			size_t max = std::size_t(256);
+			size_t err_len = err.size();
+			size_t min = max<err_len? max:err_len; 
 			memcpy(
 				out_data->return_msg,
 				err.c_str(),
-				std::min(rust::usize(256), err.size())
+				min
 			);
 			out_data->out_flags |= PF_OutFlag_DISPLAY_ERROR_MESSAGE;
 		}
@@ -744,8 +747,8 @@ static PF_Err SmartRender(
 			break;
 		case PF_Param_POINT:
 			std::array<float, 2> point;
-			color[0] = param.u.td.x_value;
-			color[1] = param.u.td.y_value;
+			point[0] = param.u.td.x_value;
+			point[1] = param.u.td.y_value;
 			set_point(input, point);
 			break;
 		case PF_Param_LAYER:
@@ -776,15 +779,16 @@ static PF_Err SmartRender(
 				layer->rowbytes * layer->height
 			);
 
-			layer_data_vec.emplace_back(ImageInput{
-				.name = name_str,
-				.data = data,
-				.width = static_cast<rust::u32>(layer->width),
-				.height = static_cast<rust::u32>(layer->height),
-				.bytes_per_row = static_cast<rust::u32>(layer->rowbytes),
-				.bit_depth
-				= static_cast<rust::u32>((layer->rowbytes / layer->width) / 8),
-			});
+			auto image_input = ImageInput();
+			image_input.name = name_str;
+			image_input.data = data;
+			image_input.width = static_cast<rust::u32>(layer->width);
+			image_input.height = static_cast<rust::u32>(layer->height);
+			image_input.bytes_per_row = static_cast<rust::u32>(layer->rowbytes);
+			image_input.bit_depth
+			= static_cast<rust::u32>((layer->rowbytes / layer->width) / 8);
+
+			layer_data_vec.push_back(image_input);
 			break;
 		}
 
@@ -828,11 +832,11 @@ static PF_Err SmartRender(
 		ERR(PF_CHECKIN_PARAM(in_data, &param));
 	}
 
-	RenderData render_data = RenderData{
-		.time = time,
-		.time_scale = static_cast<uint32_t>(in_data->time_scale),
-		.delta = static_cast<uint32_t>(in_data->time_step),
-	};
+	RenderData render_data = RenderData();
+	
+	render_data.time = time;
+	render_data.time_scale = static_cast<uint32_t>(in_data->time_scale);
+	render_data.delta = static_cast<uint32_t>(in_data->time_step);
 
 	size_t data_len = output_layer->rowbytes * output_layer->height;
 	auto ptr = reinterpret_cast<uint8_t*>(output_layer->data);

@@ -7,7 +7,6 @@
 
 #include <iostream>
 #include <string>
-#include <sys/_types/_int32_t.h>
 
 PF_Err setParamVisibility(
 	AEGP_PluginID aegpId,
@@ -50,7 +49,7 @@ PF_Err createOneOfEveryInputType(
 	PF_OutData* out_data,
 	PF_ParamDef* params[],
 	PF_LayerDef* output,
-	int32_t index
+	rust::u32 index
 )
 {
 
@@ -139,6 +138,7 @@ PF_Err createOneOfEveryInputType(
 #define YELLOW "\033[33m"
 #define BLUE "\033[34m"
 
+#ifndef AE_OS_WIN
 void log(LogLevel level, const char* file, int line, const std::string& message)
 {
 	std::string levelStr;
@@ -168,6 +168,7 @@ void log(LogLevel level, const char* file, int line, const std::string& message)
 			  << levelStr << RESET << "] " << color << file << ":" << line
 			  << ":" << RESET << " " << message << std::endl;
 }
+#endif
 
 PF_Err setParamsToMatchSequence(
 	PF_InData* in_data,
