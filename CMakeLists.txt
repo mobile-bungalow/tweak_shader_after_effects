@@ -27,25 +27,29 @@ include_directories(
   ./
 )
 
-add_subdirectory(tweak_shader_cxx)
-
 include_directories(
   tweak_shader_cxx/target/cxxbridge/rust
   tweak_shader_cxx/target/cxxbridge/tweak_shader_cxx
 )
 
-#run this to build the include dirs
-add_custom_target(
-    proxy_run_build 
-    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/tweak_shader_cxx && cargo build
+set(CARGO_MANIFEST ${CMAKE_SOURCE_DIR}/tweak_shader_cxx/Cargo.toml)
+set(CARGO_TARGET_DIR ${CMAKE_SOURCE_DIR}/tweak_shader_cxx/target)
+
+set(CXX_BRIDGE ${CARGO_TARGET_DIR}/cxxbridge/blobstore/src/lib.rs.cc)
+set(CXX_LIB ${CARGO_TARGET_DIR}/debug/${CMAKE_STATIC_LIBRARY_PREFIX}tweak_shader_cxx${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+add_custom_command(
+        OUTPUT ${CXX_BRIDGE} ${CXX_LIB}
+        COMMAND cargo build --manifest-path ${CARGO_MANIFEST}
+        DEPENDS tweak_shader_cxx/src/lib.rs 
+        USES_TERMINAL
+        COMMENT "Running cargo..."
 )
 
 # Specify the plugin target
 add_library(${PROJECT_NAME} MODULE ${SOURCE_FILES})
 
-add_dependencies(${PROJECT_NAME} proxy_run_build)
-
-target_link_libraries(${PROJECT_NAME} tweak_shader_cxx)
+target_link_libraries(${PROJECT_NAME} ${CXX_LIB})
 
 # If we are generating an xcode project 
 if(CMAKE_GENERATOR STREQUAL "Xcode")
