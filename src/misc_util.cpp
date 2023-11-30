@@ -1,7 +1,9 @@
 #include "misc_util.h"
-#include "src/lib.rs.h"
 #include "tweak_shader.h"
 #include "Param_Utils.h"
+
+#include "./tweak_shader_cxx/target/cxxbridge/rust/cxx.h"
+#include "./tweak_shader_cxx/target/cxxbridge/tweak_shader_cxx/src/lib.rs.h"
 
 #include <iostream>
 #include <string>

@@ -27,15 +27,10 @@ include_directories(
   ./
 )
 
-include_directories(
-  tweak_shader_cxx/target/cxxbridge/rust
-  tweak_shader_cxx/target/cxxbridge/tweak_shader_cxx
-)
-
 set(CARGO_MANIFEST ${CMAKE_SOURCE_DIR}/tweak_shader_cxx/Cargo.toml)
 set(CARGO_TARGET_DIR ${CMAKE_SOURCE_DIR}/tweak_shader_cxx/target)
 
-set(CXX_BRIDGE ${CARGO_TARGET_DIR}/cxxbridge/blobstore/src/lib.rs.cc)
+set(CXX_BRIDGE ${CARGO_TARGET_DIR}/cxxbridge/tweak_shader_cxx/src/lib.rs.cc)
 set(CXX_LIB ${CARGO_TARGET_DIR}/debug/${CMAKE_STATIC_LIBRARY_PREFIX}tweak_shader_cxx${CMAKE_STATIC_LIBRARY_SUFFIX})
 
 add_custom_command(
@@ -46,8 +41,17 @@ add_custom_command(
         COMMENT "Running cargo..."
 )
 
+
+
 # Specify the plugin target
-add_library(${PROJECT_NAME} MODULE ${SOURCE_FILES})
+add_library(${PROJECT_NAME} MODULE ${SOURCE_FILES} ${CXX_BRIDGE})
+
+target_include_directories(
+  ${PROJECT_NAME}
+  PRIVATE
+  ${CARGO_TARGET_DIR}/cxxbridge/tweak_shader_cxx/src
+  ${CARGO_TARGET_DIR}/cxxbridge/tweak_shader_cxx/rust
+)
 
 target_link_libraries(${PROJECT_NAME} ${CXX_LIB})
 
