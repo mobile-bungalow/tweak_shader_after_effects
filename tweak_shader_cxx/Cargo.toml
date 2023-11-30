@@ -8,7 +8,7 @@ crate-type = ["staticlib"]
 
 [dependencies]
 dashmap = "5.5.3"
-tweak_shader = { path="../../../../../tweak_shader_private/tweak_shader" } 
+tweak_shader = "0.2.1" 
 rfd = "0.12.1"
 homedir = "0.2.1"
 pollster = "0.3.0" 
