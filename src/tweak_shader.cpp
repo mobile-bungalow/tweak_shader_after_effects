@@ -634,18 +634,6 @@ static PF_Err SequenceSetdown(
 		sequence_data->rust_data.~Box<SequenceData>();
 	}
 
-	for( size_t i = 0; i < in_data->num_params; i++ )
-	{
-		auto param = params[i];
-		if( param->param_type == PF_Param_POPUP )
-		{
-			// I malloced all these so that this was safe to do.
-			// The API just expects you to keep all this data in
-			// read only memory...
-			free((void*)param->u.pd.u.namesptr);
-		}
-	}
-
 	suites.HandleSuite1()->host_dispose_handle(in_data->sequence_data);
 
 	return err;

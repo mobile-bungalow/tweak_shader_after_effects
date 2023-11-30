@@ -1,0 +1,18 @@
+2023-11-30 01:09:45 - Neovide panicked with the message 'Input failed: DecodeError(ReaderError(Custom { kind: UnexpectedEof, error: "EOF" }), "nvim_input")'. (File: src/bridge/ui_commands.rs; Line: 51, Column: 50)
+   0: __mh_execute_header
+   1: __mh_execute_header
+   2: __mh_execute_header
+   3: __mh_execute_header
+   4: __mh_execute_header
+   5: __mh_execute_header
+   6: __mh_execute_header
+   7: __mh_execute_header
+   8: __mh_execute_header
+   9: __mh_execute_header
+  10: __mh_execute_header
+  11: __mh_execute_header
+  12: __mh_execute_header
+  13: __mh_execute_header
+  14: __mh_execute_header
+  15: __pthread_joiner_wake
+
