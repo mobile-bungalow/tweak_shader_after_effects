@@ -522,6 +522,7 @@ static PF_Err SequenceResetup(
 	// gigantic hack, TODO: write a constructor to make sequence data in place
 	new(out_sequence_data)
 		FfiSequenceData(new_sequence_data(global_data->rust_data, 0));
+
 	out_data->sequence_data = new_sequence_data_handle;
 
 	auto* maybe_flat = reinterpret_cast<SequenceDataFlat*>(in_seq_data);
@@ -613,9 +614,8 @@ static PF_Err SequenceSetup(
 	);
 
 	AEFX_CLR_STRUCT(*sequence_data);
-
-	sequence_data->rust_data = new_sequence_data(global_data->rust_data, 0);
-	sequence_data->is_flat = false;
+	new(sequence_data)
+		FfiSequenceData(new_sequence_data(global_data->rust_data, 0));
 
 	out_data->sequence_data = sequence_data_handle;
 

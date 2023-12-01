@@ -74,7 +74,7 @@ struct FfiSequenceData
 	rust::Box<SequenceData> rust_data;
 
 	FfiSequenceData(rust::Box<SequenceData>&& box)
-		: rust_data(std::move(box)){};
+		: rust_data(std::move(box)), is_flat(false), needs_reload(false){};
 };
 
 struct SequenceDataFlat

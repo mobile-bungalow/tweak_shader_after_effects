@@ -188,7 +188,6 @@ PF_Err setParamsToMatchSequence(
 	for( int i = 0; i < num_user_inputs; ++i )
 	{
 		auto& input = inputs[i];
-		auto name = name_from_input(input);
 
 		uint32_t variant = static_cast<uint32_t>(variant_from_input(input));
 
@@ -230,7 +229,6 @@ PF_Err setParamsToMatchSequence(
 			param.u.pd.num_choices = int_list_input.values.size();
 
 			A_char* names = new A_char[int_list_input.names.length() + 1];
-
 			PF_STRCPY(names, int_list_input.names.c_str());
 			param.u.pd.u.namesptr = names;
 		}
@@ -290,6 +288,8 @@ PF_Err setParamsToMatchSequence(
 		}
 
 		param.uu.change_flags |= PF_ChangeFlag_CHANGED_VALUE;
+
+		auto name = name_from_input(input);
 		PF_STRCPY(param.name, name.data());
 
 		suites.ParamUtilsSuite3()->PF_UpdateParamUI(
