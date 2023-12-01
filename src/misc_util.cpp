@@ -171,6 +171,7 @@ void log(LogLevel level, const char* file, int line, const std::string& message)
 #endif
 
 #ifdef AE_OS_WIN
+#include <windows.h>
 static void
 	ConvertUtf8ToOemCp(const char* utf8Str, uint32_t length, char* destination)
 {
