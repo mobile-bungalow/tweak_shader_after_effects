@@ -72,6 +72,9 @@ struct FfiSequenceData
 	bool is_flat = false;
 	bool needs_reload = false;
 	rust::Box<SequenceData> rust_data;
+
+	FfiSequenceData(rust::Box<SequenceData>&& box)
+		: rust_data(std::move(box)){};
 };
 
 struct SequenceDataFlat

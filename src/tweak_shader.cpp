@@ -271,12 +271,8 @@ static PF_Err UserChangedParam(
 		{
 			size_t max = std::size_t(256);
 			size_t err_len = err.size();
-			size_t min = max<err_len? max:err_len; 
-			memcpy(
-				out_data->return_msg,
-				err.c_str(),
-				min
-			);
+			size_t min = max < err_len ? max : err_len;
+			memcpy(out_data->return_msg, err.c_str(), min);
 			out_data->out_flags |= PF_OutFlag_DISPLAY_ERROR_MESSAGE;
 		}
 		setParamsToMatchSequence(in_data, sequence_data, params);
@@ -515,18 +511,17 @@ static PF_Err SequenceResetup(
 	auto* out_sequence_data = reinterpret_cast<FfiSequenceData*>(
 		suites.HandleSuite1()->host_lock_handle(new_sequence_data_handle)
 	);
-	
-	if( !out_sequence_data ) 
+
+	if( !out_sequence_data )
 	{
 		return err;
 	}
 
 	AEFX_CLR_STRUCT(*out_sequence_data);
 
-    //gigantic hack, TODO: write a constructor to make sequence data in place
-	out_sequence_data->rust_data = rust::Box<SequenceData>::from_raw(nullptr);
-	out_sequence_data->rust_data = new_sequence_data(global_data->rust_data, 0);
-	out_sequence_data->is_flat = false;
+	// gigantic hack, TODO: write a constructor to make sequence data in place
+	new(out_sequence_data)
+		FfiSequenceData(new_sequence_data(global_data->rust_data, 0));
 	out_data->sequence_data = new_sequence_data_handle;
 
 	auto* maybe_flat = reinterpret_cast<SequenceDataFlat*>(in_seq_data);
@@ -800,7 +795,7 @@ static PF_Err SmartRender(
 			image_input.height = static_cast<rust::u32>(layer->height);
 			image_input.bytes_per_row = static_cast<rust::u32>(layer->rowbytes);
 			image_input.bit_depth
-			= static_cast<rust::u32>((layer->rowbytes / layer->width) / 8);
+				= static_cast<rust::u32>((layer->rowbytes / layer->width) / 8);
 
 			layer_data_vec.push_back(image_input);
 			break;
@@ -847,7 +842,7 @@ static PF_Err SmartRender(
 	}
 
 	RenderData render_data = RenderData();
-	
+
 	render_data.time = time;
 	render_data.time_scale = static_cast<uint32_t>(in_data->time_scale);
 	render_data.delta = static_cast<uint32_t>(in_data->time_step);
