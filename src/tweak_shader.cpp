@@ -69,10 +69,7 @@ static PF_Err GlobalSetup(
 		suites.HandleSuite1()->host_lock_handle(global_data_handle)
 	);
 
-	AEFX_CLR_STRUCT(*data);
-
-	data->rust_data = create_render_ctx();
-
+	new(data) FfiGlobalData(create_render_ctx());
 	suites.HandleSuite1()->host_unlock_handle(out_data->global_data);
 
 	return PF_Err_NONE;
@@ -512,14 +509,7 @@ static PF_Err SequenceResetup(
 		suites.HandleSuite1()->host_lock_handle(new_sequence_data_handle)
 	);
 
-	if( !out_sequence_data )
-	{
-		return err;
-	}
-
 	AEFX_CLR_STRUCT(*out_sequence_data);
-
-	// gigantic hack, TODO: write a constructor to make sequence data in place
 	new(out_sequence_data)
 		FfiSequenceData(new_sequence_data(global_data->rust_data, 0));
 

@@ -65,6 +65,8 @@ const uint32_t NUM_INPUT_TYPES = 7;
 struct FfiGlobalData
 {
 	rust::Box<GlobalData> rust_data;
+
+	FfiGlobalData(rust::Box<GlobalData>&& box) : rust_data(std::move(box)){};
 };
 
 struct FfiSequenceData

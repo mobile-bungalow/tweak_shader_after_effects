@@ -290,7 +290,8 @@ PF_Err setParamsToMatchSequence(
 		param.uu.change_flags |= PF_ChangeFlag_CHANGED_VALUE;
 
 		auto name = name_from_input(input);
-		PF_STRCPY(param.name, name.data());
+		size_t size = name.length() + 1 > 32 ? 32 : name.length() + 1;
+		PF_STRNNCPY(param.name, name.data(), size);
 
 		suites.ParamUtilsSuite3()->PF_UpdateParamUI(
 			in_data->effect_ref, index, &param
