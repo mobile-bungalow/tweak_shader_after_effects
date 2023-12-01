@@ -170,6 +170,32 @@ void log(LogLevel level, const char* file, int line, const std::string& message)
 }
 #endif
 
+#ifdef AE_OS_WIN
+static void
+	ConvertUtf8ToOemCp(const char* utf8Str, uint32_t length, char* destination)
+{
+	if( destination == nullptr )
+	{
+		return;
+	}
+
+	if( length > 32 )
+	{
+		length = 32;
+	}
+
+	wchar_t wideStr[64];
+	int wideCharLength
+		= MultiByteToWideChar(CP_UTF8, 0, utf8Str, length, wideStr, 64);
+
+	int oemCpLength = WideCharToMultiByte(
+		CP_OEMCP, 0, wideStr, wideCharLength, destination, 64, nullptr, nullptr
+	);
+
+	destination[oemCpLength] = '\0';
+}
+#endif
+
 PF_Err setParamsToMatchSequence(
 	PF_InData* in_data,
 	const FfiSequenceData* sequence_data,
@@ -289,9 +315,17 @@ PF_Err setParamsToMatchSequence(
 
 		param.uu.change_flags |= PF_ChangeFlag_CHANGED_VALUE;
 
-		auto name = name_from_input(input);
-		size_t size = name.length() + 1 > 32 ? 32 : name.length() + 1;
-		PF_STRNNCPY(param.name, name.data(), size);
+#ifdef AE_OS_MAC
+		auto name_str = name_from_input(input);
+		const char* data = name_str.data();
+		size_t size = name_str.length() + 1 > 32 ? 32 : name_str.length() + 1;
+		PF_STRNNCPY(param.name, data, size);
+#endif
+
+#ifdef AE_OS_WIN
+		auto utf8_name = name_from_input(input);
+		ConvertUtf8ToOemCp(utf8_name.data(), utf8_name.length(), param.name);
+#endif
 
 		suites.ParamUtilsSuite3()->PF_UpdateParamUI(
 			in_data->effect_ref, index, &param

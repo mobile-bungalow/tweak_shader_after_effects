@@ -369,12 +369,6 @@ static PF_Err UpdateParamsUI(
 	return err;
 }
 
-// Smart Pre rendering allows the user to communicate to after effects
-// what portion of the effected layer they will be modifying. In many
-// cases this means making an AABB around an inverted mask. We just
-// use the whole layer. You need smart render to render to layers with
-// floating point color depth though so we have to go through
-// this dance anyways. This should be named "CullingStep"
 static PF_Err SmartPreRender(
 	PF_InData* in_data, PF_OutData* out_data, PF_PreRenderExtra* extra
 )
