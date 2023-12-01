@@ -33,9 +33,15 @@ set(CARGO_TARGET_DIR ${CMAKE_SOURCE_DIR}/tweak_shader_cxx/target)
 set(CXX_BRIDGE ${CARGO_TARGET_DIR}/cxxbridge/tweak_shader_cxx/src/lib.rs.cc)
 set(CXX_LIB ${CARGO_TARGET_DIR}/debug/${CMAKE_STATIC_LIBRARY_PREFIX}tweak_shader_cxx${CMAKE_STATIC_LIBRARY_SUFFIX})
 
+if(CMAKE_GENERATOR STREQUAL "Xcode")
+  set(CARGO "$ENV{HOME}/.cargo/bin/cargo")
+else()
+  set(CARGO "$ENV{USERPROFILE}/.cargo/bin/cargo.exe")
+endif()
+
 add_custom_command(
         OUTPUT ${CXX_BRIDGE} ${CXX_LIB}
-        COMMAND cargo build --manifest-path ${CARGO_MANIFEST}
+        COMMAND ${CARGO} build --manifest-path ${CARGO_MANIFEST}
         DEPENDS tweak_shader_cxx/src/lib.rs 
         USES_TERMINAL
         COMMENT "Running cargo..."
