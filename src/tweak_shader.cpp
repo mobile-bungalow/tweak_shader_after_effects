@@ -507,10 +507,24 @@ static PF_Err SequenceResetup(
 		suites.HandleSuite1()->host_lock_handle(in_data->global_data)
 	);
 
+	if( !global_data )
+	{
+		return err;
+	}
+
 	auto* out_sequence_data = reinterpret_cast<FfiSequenceData*>(
 		suites.HandleSuite1()->host_lock_handle(new_sequence_data_handle)
 	);
+	
+	if( !out_sequence_data ) 
+	{
+		return err;
+	}
 
+	AEFX_CLR_STRUCT(*out_sequence_data);
+
+    //gigantic hack, TODO: write a constructor to make sequence data in place
+	out_sequence_data->rust_data = rust::Box<SequenceData>::from_raw(nullptr);
 	out_sequence_data->rust_data = new_sequence_data(global_data->rust_data, 0);
 	out_sequence_data->is_flat = false;
 	out_data->sequence_data = new_sequence_data_handle;

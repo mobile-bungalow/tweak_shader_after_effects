@@ -41,8 +41,6 @@ add_custom_command(
         COMMENT "Running cargo..."
 )
 
-
-
 # Specify the plugin target
 add_library(${PROJECT_NAME} MODULE ${SOURCE_FILES} ${CXX_BRIDGE})
 
