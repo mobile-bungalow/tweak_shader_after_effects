@@ -8,11 +8,12 @@ crate-type = ["staticlib"]
 
 [dependencies]
 dashmap = "5.5.3"
-tweak_shader = "0.2.1" 
-rfd = "0.12.1"
+tweak_shader = { git = "https://github.com/mobile-bungalow/tweak_shader.git", branch="trunk"}
+tinyfiledialogs = "3.9.1"
 homedir = "0.2.1"
 pollster = "0.3.0" 
 cxx = "1.0"
 
 [build-dependencies]
 cxx-build = "1.0"
+

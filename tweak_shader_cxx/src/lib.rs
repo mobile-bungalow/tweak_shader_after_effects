@@ -6,9 +6,9 @@ use crate::sequence_data::{Pipelines, SequenceData};
 use cxx::CxxVector;
 use ffi::ImageInput;
 use homedir::get_my_home;
-use rfd::FileDialog;
 use std::collections::BTreeMap;
 use std::sync::RwLock;
+use tinyfiledialogs::*;
 
 use tweak_shader::{
     wgpu::{Device, Queue, TextureFormat},
@@ -39,17 +39,18 @@ fn create_render_ctx() -> Box<GlobalData> {
             .await
             .expect("Failed to find an appropriate adapter")
     });
-    let mut limits = wgpu::Limits::downlevel_webgl2_defaults().using_resolution(adapter.limits());
-    limits.max_push_constant_size = 256;
+    let mut required_limits =
+        wgpu::Limits::downlevel_webgl2_defaults().using_resolution(adapter.limits());
+    required_limits.max_push_constant_size = 128;
 
     let (device, queue) = pollster::block_on(async {
         adapter
             .request_device(
                 &wgpu::DeviceDescriptor {
                     label: None,
-                    features: wgpu::Features::PUSH_CONSTANTS
+                    required_features: wgpu::Features::PUSH_CONSTANTS
                         | wgpu::Features::TEXTURE_FORMAT_16BIT_NORM,
-                    limits,
+                    required_limits,
                 },
                 None,
             )
@@ -312,10 +313,13 @@ fn load_scene(global_data: &Box<GlobalData>, sequence_data: &Box<SequenceData>) 
         _ => "/".into(),
     };
 
-    let file = FileDialog::new()
-        .add_filter("shader", &["glsl", "fs", "vs", "frag"])
-        .set_directory(home_dir)
-        .pick_file();
+    let file =
+        tinyfiledialogs::open_file_dialog("shaders", home_dir.as_os_str().to_str().unwrap(), None);
+
+    // FileDialog::new()
+    // .add_filter("shader", &["glsl", "fs", "vs", "frag"])
+    // .set_directory(home_dir)
+    // .pick_file();
 
     let Some(Ok(src)) = file.map(|path| std::fs::read_to_string(path)) else {
         return String::new();
