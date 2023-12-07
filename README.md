@@ -37,6 +37,10 @@ The resulting `TWEAK_SHADER.plugin` will be inside the adjacent `Release` direct
 
 #### Windows
 
+- Support for windows is currently limited because I don't have a good windows machine handy. Additionally, 
+wgpu, the underlying graphics library, is not fully mature on windows and competes for GPU resources in a way 
+that may hang on some machines.
+
 download a compatible version of [cmake](https://cmake.org/download/) and [cargo](https://rustup.rs/) and msvc through the Visual Studio Updater. Then run the following.
 
 ```powershell
